@@ -6,10 +6,12 @@ import java.util.Random;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -17,7 +19,10 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle;
 
 
 public class GameScreen implements Screen {
@@ -296,7 +301,6 @@ public class GameScreen implements Screen {
  				checkMove(grid.getIndex_X(),grid.getIndex_Y());
  				checkKill();
  			}
-
  		}
  		
  		
@@ -313,15 +317,7 @@ public class GameScreen implements Screen {
          }
  		
  		public void elongate()
- 		{
- 			/*
- 			SnakeBlock lastBlock = snakeBlockList.get(snakeBlockList.size()-1);
- 			Move lastBlocksLastMove = lastBlock.moveList.get(0);
- 			Move moves[] = new Move[]{lastBlock.oppositeMove(lastBlocksLastMove)};
- 			SnakeBlock newBlock = new SnakeBlock(lastBlock,moves);
- 			snakeBlockList.add(newBlock);
- 			*/
- 			
+ 		{ 			
  			SnakeBlock lastBlock = snakeBlockList.get(snakeBlockList.size()-1);
  			SnakeBlock newBlock = new SnakeBlock(lastBlock);
  			newBlock.moveSnakeBlock(newBlock.oppositeMove(lastBlock.previousMove));
@@ -509,10 +505,13 @@ public class GameScreen implements Screen {
  		int BLOCK_NUMBER_Y;
  		boolean isPlaying = false;
  		Texture texture = new Texture(Gdx.files.internal("data/stoneWall.png"));
+ 		//Sound eatSound = Gdx.audio.newSound(Gdx.files.internal("sounds/bite.mp3"));
  		
  		Snake snake;
  		FoodSpawner foodSpawner;
  		GameUI gameUI;
+ 		Stage stage;
+ 		
  		int points = 0;
  		
  		public Grid(int x, int y, float w, float h)
@@ -615,6 +614,7 @@ public class GameScreen implements Screen {
  				this.isPlaying = true;
  				snake.isAlive = true;
  				gameUI.start();
+ 				
  			}
  		}
  		
@@ -624,9 +624,11 @@ public class GameScreen implements Screen {
  			{
  				this.isPlaying = false;
  				snake.isAlive = false;
- 				snake.resetSnake();
+ 				//snake.resetSnake();
  				gameUI.stop();
  				points = 0;
+ 				showScore();
+
  			}
  		}
  		
@@ -661,6 +663,7 @@ public class GameScreen implements Screen {
  				foodSpawner.spawnFood();
  				points++;
  				gameUI.updateScore(points);
+ 				//eatSound.play();
  			}
  		}
  		
@@ -678,6 +681,20 @@ public class GameScreen implements Screen {
  			}
  		}
  		
+ 		public void showScore()
+ 		{
+	         Skin uiSkin = new Skin(Gdx.files.internal("data/uiskin.json"));
+		         
+	         ScoreDialog scoreDialog = new ScoreDialog("Score", uiSkin, grid);
+	         scoreDialog.setPosition((this.width/2)-(scoreDialog.getWidth()/2), 0);
+	         MoveToAction move = new MoveToAction();
+	         move.setPosition((this.width/2)-(scoreDialog.getWidth()/2), this.height/2);
+	         move.setDuration(0.25f);
+	         scoreDialog.addAction(move);
+	         
+	         stage.addActor(scoreDialog);
+ 		}
+ 		
  		public void setSnake(Snake s)
  		{
  			this.snake = s;
@@ -692,6 +709,13 @@ public class GameScreen implements Screen {
  		{
  			this.gameUI = ui;
  		}
+ 		
+ 		public void setStage(Stage s)
+ 		{
+ 			this.stage = s;
+ 		}
+ 		
+ 		
  	}
  	
  	
@@ -741,11 +765,14 @@ public class GameScreen implements Screen {
          grid.setSnake(snake);
          grid.setFoodSpawner(foodSpawner);
          grid.setGameUI(gameUI);
-         
+         grid.setStage(stage);
          
          stage.addActor(snake);
          stage.addActor(foodSpawner);
          stage.addActor(gameUI);
+         
+         //WindowStyle newStyle = new WindowStyle();
+         //newStyle.titleFont = new BitmapFont();      
      }
 
      @Override
