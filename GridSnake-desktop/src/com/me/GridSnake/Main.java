@@ -8,6 +8,8 @@ public class Main {
 		LwjglApplicationConfiguration cfg = new LwjglApplicationConfiguration();
 		cfg.title = "GridSnake";
 		cfg.useGL20 = false;
+		//cfg.width = 240;
+		//cfg.height = 320;
 		cfg.width = 320;
 		cfg.height = 480;
 		

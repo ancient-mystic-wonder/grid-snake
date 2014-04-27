@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -46,6 +47,9 @@ public class MainMenuScreen implements Screen {
 	@Override
 	public void render(float delta) {
 		// TODO Auto-generated method stub
+		//Gdx.graphics.getGL20().glClearColor( 1, 0, 0, 1 );
+		Gdx.gl.glClearColor(182/255f, 222/255f, 159/255f, 1);
+		//Gdx.gl.glClearColor(185/255f, 199/255f, 51/255f, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 		Table.drawDebug(stage);
         stage.act(Gdx.graphics.getDeltaTime());
@@ -75,7 +79,7 @@ public class MainMenuScreen implements Screen {
 
         
         
-        /// BUTTON
+        /// PLAY BUTTON
         
         Texture upTexture =  new Texture(Gdx.files.internal("data/grass_platform.png"));
         Texture downTexture =  new Texture(Gdx.files.internal("data/block.png"));
@@ -103,17 +107,37 @@ public class MainMenuScreen implements Screen {
         });
 
         
+        float origX = 320;
+        float origY = 480;
+        
+        float scaleX = Gdx.graphics.getWidth()/origX;
+        float scaleY = Gdx.graphics.getHeight()/origY;
         LabelStyle labelStyle = new LabelStyle(buttonFont, Color.WHITE);
+        
+        // LOGO
+        
+        /*
+        
         
         //Label title = new Label( "GridSnake",labelStyle );
         Label title = new Label( "GRIDSNAKE",labelStyle );
-        title.setFontScale(2f);
-        
-        Label subtitle = new Label("Ancient Mystic Wonder Games", labelStyle);
         
         
         
-        table.add(title);
+        title.setFontScale(scaleX*2, scaleY*2);
+        */
+        
+        Texture logoTexture = new Texture(Gdx.files.internal("data/Gridsnake Logo 2.png"));
+        Image logo = new Image(logoTexture);
+        
+        // Company name
+        
+        Label subtitle = new Label("ANCIENT MYSTIC WONDER GAMES", labelStyle);
+        subtitle.setFontScale(scaleX*0.7f,scaleY*0.7f);
+        subtitle.setColor(74/255f, 78/255f, 79/255f, 1);
+        
+        //table.add(title);
+        table.add(logo);
         table.row();
         table.add(subtitle);
         table.row();

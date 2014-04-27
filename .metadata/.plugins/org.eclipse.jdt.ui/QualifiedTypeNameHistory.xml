@@ -24,4 +24,8 @@
 <fullyQualifiedTypeName name="com.badlogic.gdx.scenes.scene2d.ui.Table"/>
 <fullyQualifiedTypeName name="com.badlogic.gdx.graphics.FPSLogger"/>
 <fullyQualifiedTypeName name="com.badlogic.gdx.scenes.scene2d.Group"/>
+<fullyQualifiedTypeName name="com.badlogic.gdx.audio.Sound"/>
+<fullyQualifiedTypeName name="com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle"/>
+<fullyQualifiedTypeName name="com.badlogic.gdx.scenes.scene2d.ui.Skin"/>
+<fullyQualifiedTypeName name="com.badlogic.gdx.scenes.scene2d.ui.Image"/>
 </qualifiedTypeNameHistroy>

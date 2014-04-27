@@ -56,6 +56,14 @@ public class GameUI extends Table {
 		scoreLabel = new Label("000",labelStyle);
         //Label subtitle = new Label("Ancient Mystic Wonder Games", labelStyle);
 
+		float origX = 320;
+        float origY = 480;
+        
+        float scaleX = Gdx.graphics.getWidth()/origX;
+        float scaleY = Gdx.graphics.getHeight()/origY;
+        
+        tapScreenLabel.setFontScale(scaleX, scaleY);
+        scoreLabel.setFontScale(scaleX, scaleY);
         
         add(scoreLabel).right().pad(10);
         row();

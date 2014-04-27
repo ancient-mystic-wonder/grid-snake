@@ -29,6 +29,15 @@ public class ScoreDialog extends Dialog {
 		this.button("Play again");
 	}
 	
+	public ScoreDialog(String title, Skin skin, Grid grid, int score, String deathType)
+	{
+		super(title, skin);
+		this.grid = grid;
+		
+		determineText(score, deathType);
+		
+	}
+	
 	public ScoreDialog(String title, WindowStyle style, Grid grid)
 	{
 		super(title, style);
@@ -36,5 +45,27 @@ public class ScoreDialog extends Dialog {
 
 		
 		this.text("Your Score Here");
+	}
+	
+	private void determineText(int score, String deathType)
+	{
+		if(deathType.equals("hit"))
+			this.text("You hit yourself!");
+		else if(deathType.equals("letitgo"))
+			this.text("You let go of the snake!");
+		else if(deathType.equals("timer"))
+			this.text("You didn't move!");
+		else
+			this.text("You died!");
+		
+		this.getContentTable().row();
+		
+		this.text("Your score: " + Integer.toString(score));
+		this.button("Play again!");
+	}
+	
+	protected void result(Object object)
+	{
+		this.grid.resetBoard();
 	}
 }

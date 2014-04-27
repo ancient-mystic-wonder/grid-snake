@@ -27,7 +27,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle;
 
 public class GameScreen implements Screen {
 
-	GridSnakeGame game; // Note it's "MyGame" not "Game"
+	GridSnakeGame game;
 	private FPSLogger fpsLogger;
 
     // constructor to keep a reference to the main Game class
@@ -267,7 +267,7 @@ public class GameScreen implements Screen {
  			}
  			if (kill)
  			{
- 				grid.stopGame();
+ 				grid.stopGame("hit");
  			}
  		}
  		
@@ -296,7 +296,7 @@ public class GameScreen implements Screen {
  				if (currentLife < 0)
  				{
  					currentLife = 0;
- 					grid.stopGame();
+ 					grid.stopGame("timer");
  				}
  				checkMove(grid.getIndex_X(),grid.getIndex_Y());
  				checkKill();
@@ -356,6 +356,11 @@ public class GameScreen implements Screen {
  			
  			currentLife = 3f;
  			System.out.println("jhk"+snakeHead.indexX);
+ 		}
+ 		
+ 		public int getLength()
+ 		{
+ 			return this.snakeBlockList.size();
  		}
  		
  	}
@@ -424,6 +429,11 @@ public class GameScreen implements Screen {
  			}
  		}
  		
+ 		public void empty()
+ 		{
+ 			foodList.clear();
+ 		}
+ 		
  		public ArrayList<Food> getFoods()
  		{
  			return this.foodList;
@@ -477,10 +487,6 @@ public class GameScreen implements Screen {
  		@Override
          public void draw(SpriteBatch batch, float alpha){
  			super.draw(batch, alpha);
- 			//Color color = getColor();
- 			//batch.setColor(56, 56, 56, 255);
-             //batch.draw(region, getX(), getY(), getOriginX(), getOriginY(),
-             //        getWidth(), getHeight(), getScaleX(), getScaleY(), getRotation());
  			batch.draw(texture, this.x,this.y,this.width,this.height);
          }
  		
@@ -504,8 +510,9 @@ public class GameScreen implements Screen {
  		int BLOCK_NUMBER_X;
  		int BLOCK_NUMBER_Y;
  		boolean isPlaying = false;
+ 		boolean showingOtherScreen = false;
  		Texture texture = new Texture(Gdx.files.internal("data/stoneWall.png"));
- 		//Sound eatSound = Gdx.audio.newSound(Gdx.files.internal("sounds/bite.mp3"));
+ 		Sound eatSound = Gdx.audio.newSound(Gdx.files.internal("sounds/bite.mp3"));
  		
  		Snake snake;
  		FoodSpawner foodSpawner;
@@ -530,9 +537,9 @@ public class GameScreen implements Screen {
  	            	GridBox currentBox = target.getCurrentBox(x, y);
  	            	current_index_x = currentBox.index_x;
  	            	current_index_y = currentBox.index_y;
- 	            	//System.out.println(currentBox.getIndex_x() + " " + currentBox.getIndex_y());
 
- 	                target.tryToStartGame();
+ 	            	if (!target.showingOtherScreen)
+ 	            		target.tryToStartGame();
  	                
  	            	return true;
  	            }
@@ -550,7 +557,7 @@ public class GameScreen implements Screen {
  	            public void touchUp(InputEvent event, float x, float y, int pointer, int button)
  	            {
  	            	Grid target = (Grid)event.getTarget();
- 	            	target.stopGame();
+ 	            	target.stopGame("letitgo");
  	            }
  	            
  	        });
@@ -560,6 +567,7 @@ public class GameScreen implements Screen {
  		@Override
          public void draw(SpriteBatch batch, float alpha){
  			super.draw(batch, alpha);
+ 			batch.setColor(1,1,1,1);
  			for(int x=0; x< BLOCK_NUMBER_X; x++)
  	        {
  	        	for(int y=0; y< BLOCK_NUMBER_Y; y++)
@@ -614,22 +622,28 @@ public class GameScreen implements Screen {
  				this.isPlaying = true;
  				snake.isAlive = true;
  				gameUI.start();
- 				
  			}
  		}
  		
- 		public void stopGame()
+ 		public void stopGame(String defeatString)
  		{
- 			if(this.isPlaying == true)
+ 			if(this.isPlaying)
  			{
  				this.isPlaying = false;
  				snake.isAlive = false;
- 				//snake.resetSnake();
- 				gameUI.stop();
- 				points = 0;
- 				showScore();
-
+ 				showScore(defeatString);
  			}
+ 		}
+ 		
+ 		// This only gets called after the score dialog's button is pressed
+ 		public void resetBoard()
+ 		{
+ 			this.showingOtherScreen = false;
+			snake.resetSnake();
+			gameUI.stop();
+			points = 0;
+			foodSpawner.empty();
+			foodSpawner.spawnFood();
  		}
  		
  		public void checkEat()
@@ -661,9 +675,9 @@ public class GameScreen implements Screen {
  			{
  				snake.elongate();
  				foodSpawner.spawnFood();
- 				points++;
+ 				points+=this.snake.getLength();
  				gameUI.updateScore(points);
- 				//eatSound.play();
+ 				eatSound.play();
  			}
  		}
  		
@@ -681,11 +695,13 @@ public class GameScreen implements Screen {
  			}
  		}
  		
- 		public void showScore()
+ 		public void showScore(String defeatString)
  		{
+ 			 this.showingOtherScreen = true;
 	         Skin uiSkin = new Skin(Gdx.files.internal("data/uiskin.json"));
 		         
-	         ScoreDialog scoreDialog = new ScoreDialog("Score", uiSkin, grid);
+	         ScoreDialog scoreDialog = new ScoreDialog("Score", uiSkin, grid, grid.points, defeatString);
+	         scoreDialog.pack();
 	         scoreDialog.setPosition((this.width/2)-(scoreDialog.getWidth()/2), 0);
 	         MoveToAction move = new MoveToAction();
 	         move.setPosition((this.width/2)-(scoreDialog.getWidth()/2), this.height/2);
@@ -749,6 +765,8 @@ public class GameScreen implements Screen {
          System.out.println(BLOCK_WIDTH);
          
          stage = new Stage(Gdx.graphics.getWidth(),Gdx.graphics.getHeight(),true);
+         stage.setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
+         stage.getCamera().position.set(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2, 0);
          Gdx.input.setInputProcessor(stage);
          
          grid = new Grid(BLOCK_NUMBER_X,BLOCK_NUMBER_Y,STAGE_WIDTH,STAGE_HEIGHT);
@@ -790,7 +808,7 @@ public class GameScreen implements Screen {
          
          gameUI.debug(); // turn on all debug lines (table, cell, and widget)
          stage.draw();
-         Table.drawDebug(stage);
+         //Table.drawDebug(stage);
          
          stage.draw();
      }
