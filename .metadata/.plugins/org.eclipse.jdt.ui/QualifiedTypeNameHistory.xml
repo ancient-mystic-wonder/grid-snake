@@ -28,4 +28,9 @@
 <fullyQualifiedTypeName name="com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle"/>
 <fullyQualifiedTypeName name="com.badlogic.gdx.scenes.scene2d.ui.Skin"/>
 <fullyQualifiedTypeName name="com.badlogic.gdx.scenes.scene2d.ui.Image"/>
+<fullyQualifiedTypeName name="com.badlogic.gdx.graphics.Texture.TextureFilter"/>
+<fullyQualifiedTypeName name="com.badlogic.gdx.scenes.scene2d.ui.ImageButton"/>
+<fullyQualifiedTypeName name="com.badlogic.gdx.scenes.scene2d.utils.Align"/>
+<fullyQualifiedTypeName name="com.badlogic.gdx.scenes.scene2d.ui.Button"/>
+<fullyQualifiedTypeName name="com.badlogic.gdx.utils.Array"/>
 </qualifiedTypeNameHistroy>

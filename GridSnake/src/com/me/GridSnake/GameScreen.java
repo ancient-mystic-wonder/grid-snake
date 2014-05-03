@@ -1,6 +1,6 @@
 package com.me.GridSnake;
 
-import java.util.ArrayList;
+
 import java.util.Iterator;
 import java.util.Random;
 
@@ -11,9 +11,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.FPSLogger;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -21,8 +20,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.actions.MoveToAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle;
+import com.badlogic.gdx.utils.Array;
 
 
 public class GameScreen implements Screen {
@@ -42,23 +40,19 @@ public class GameScreen implements Screen {
  	}
  	
  	public class SnakeBlock extends Actor {
-         Texture texture = new Texture(Gdx.files.internal("data/block.png"));
-         Texture headTexture = new Texture(Gdx.files.internal("data/boxCoinAlt.png"));
-         Texture tailTexture = new Texture(Gdx.files.internal("data/boxCoinAlt_disabled.png"));
+         Texture texture = new Texture(Gdx.files.internal("data/SnakeBodyTexture.png"),true);
+         Texture headTexture = new Texture(Gdx.files.internal("data/SnakeHeadTexture.png"));
+         Texture tailTexture = new Texture(Gdx.files.internal("data/SnakeTailTexture.png"));
          int indexX;
          int indexY;
          float blockWidth;
          float blockHeight;
+         boolean flip = false;
          boolean isHead = false;
          boolean isTail = false;
-         ArrayList<Move> moveList;
+         Array<Move> moveList;
          Move previousMove = Move.NONE;
 
-         public SnakeBlock(int x, int y){
-             this.indexX = x;
-             this.indexY = y;
-             moveList = new ArrayList<Move>();
-         }
          
          public SnakeBlock(int x, int y, float w, float h)
          {
@@ -67,7 +61,8 @@ public class GameScreen implements Screen {
              this.blockWidth = w;
              this.blockHeight = h;
              setBounds(x*w, y*h, w, h);
-             moveList = new ArrayList<Move>();
+             setOrigin(blockWidth/2,blockHeight/2);
+             moveList = new Array<Move>();
          }
          
          public SnakeBlock(SnakeBlock head, Move[] offsetMoves)
@@ -77,7 +72,8 @@ public class GameScreen implements Screen {
              this.blockWidth = head.blockWidth;
              this.blockHeight = head.blockHeight;
              setBounds(indexX*blockWidth,indexY*blockHeight,blockWidth,blockHeight);
-             moveList = new ArrayList<Move>();
+             setOrigin(blockWidth/2,blockHeight/2);
+             moveList = new Array<Move>();
              
              for (Move currentMove : offsetMoves)
              {
@@ -93,10 +89,17 @@ public class GameScreen implements Screen {
              this.blockWidth = block.blockWidth;
              this.blockHeight = block.blockHeight;
              setBounds(indexX*blockWidth,indexY*blockHeight,blockWidth,blockHeight);
-             moveList = new ArrayList<Move>();
+             setOrigin(blockWidth/2,blockHeight/2);
+             moveList = new Array<Move>();
              
              for (Move currentMove : block.moveList)
              	moveList.add(currentMove); 
+         }
+         
+         {
+        	 texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+        	 headTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+        	 tailTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
          }
          
          public void changeHeadStatus(boolean b)
@@ -129,7 +132,7 @@ public class GameScreen implements Screen {
          
          public void popFromMoveStack()
          {
-         	Move newMove = moveList.remove(0);
+         	Move newMove = moveList.removeIndex(0);
          	moveSnakeBlock(newMove);
          }
          
@@ -138,32 +141,82 @@ public class GameScreen implements Screen {
          	switch (move)
          	{
          	case LEFT:
-         		this.indexX -= 1;
+         		this.indexX -= 1;	
          		break;
+         		
          	case RIGHT:
          		this.indexX += 1;
          		break;
+         		
          	case UP:
          		this.indexY += 1;
          		break;
+         		
          	case DOWN:
          		this.indexY -= 1;
          		break;
  			default:
  				break;
          	}
+         	
+         	if(isHead)
+         		rotateSnakeBlock(move);
+         	else if (isTail)
+         	{
+         		rotateSnakeBlock(moveList.get(0));
+         	}
+         	
          	this.previousMove = move;
+         	this.setPosition(indexX*getWidth(),indexY*getHeight());
+         	
+         }
+         
+         public void rotateSnakeBlock(Move move)
+         {
+        	 switch (move)
+          	{
+          	case LEFT:
+          			this.setRotation(0);
+          			this.flip = false;
+          		break;
+          		
+          	case RIGHT:
+          			this.setRotation(0);
+          			this.flip = true;
+          		break;
+          		
+          	case UP:
+ 	         	this.setRotation(-90);
+ 	         	this.flip = false;
+          		break;
+          		
+          	case DOWN:
+ 	         	this.setRotation(90);
+ 	         	this.flip = false;
+          		break;
+  			default:
+  				break;
+          	}
          }
          
          @Override
          public void draw(SpriteBatch batch, float alpha){
          	batch.setColor(1.0f, 1.0f, 1.0f, alpha/255);
+         	Texture toDraw = texture;
          	if (this.isHead)
-         		batch.draw(headTexture,indexX*getWidth(),indexY*getHeight(),getWidth(), getHeight());
+         		toDraw = headTexture;
          	else if(this.isTail)
-         		batch.draw(tailTexture,indexX*getWidth(),indexY*getHeight(),getWidth(), getHeight());        		
+         		toDraw = tailTexture;
          	else
-         		batch.draw(texture,indexX*getWidth(),indexY*getHeight(),getWidth(), getHeight());        		
+         		toDraw = texture;
+         	
+         	batch.draw(toDraw, indexX*getWidth(), indexY*getHeight(),
+         			getOriginX(), getOriginY(), 
+         			getWidth(), getHeight(), 
+         			getScaleX(), getScaleY(), getRotation(), 
+         			0, 0, toDraw.getWidth(), toDraw.getHeight(), 
+         			flip, false);
+
          	batch.setColor(Color.WHITE);
              //System.out.println(indexX*getX()+" "+indexY*getY());
          }
@@ -172,15 +225,18 @@ public class GameScreen implements Screen {
  	
  	public class Snake extends Actor
  	{
- 		ArrayList<SnakeBlock> snakeBlockList;
+ 		Array<SnakeBlock> snakeBlockList;
+
  		Grid grid;
  		SnakeBlock snakeHead;
  		SnakeBlock snakeTail;
  		int currentX, currentY;
  		Move previousMove = Move.NONE;
  		
- 		float maxLife = 3f;
- 		float currentLife = 3f;
+ 		float maxLife = 1.5f;
+ 		float currentLife = 1.5f;
+ 		//float maxLife = 15f;
+ 		//float currentLife = 15f;
  		
  		boolean isAlive = true;
  		
@@ -191,7 +247,7 @@ public class GameScreen implements Screen {
  			this.currentY = 0;
  			snakeHead = new SnakeBlock(0,0,BLOCK_WIDTH,BLOCK_HEIGHT);
  			snakeHead.changeHeadStatus(true);
- 			snakeBlockList = new ArrayList<SnakeBlock>();
+ 			snakeBlockList = new Array<SnakeBlock>(g.BLOCK_NUMBER_X*g.BLOCK_NUMBER_Y);
  			snakeBlockList.add(snakeHead);
  			
  			Move[] moveArray = new Move[]{Move.RIGHT};
@@ -210,7 +266,7 @@ public class GameScreen implements Screen {
  			this.currentX = startX;
  			this.currentY = startY;
  			snakeHead = new SnakeBlock(startX,startY,BLOCK_WIDTH,BLOCK_HEIGHT);
- 			snakeBlockList = new ArrayList<SnakeBlock>();
+ 			snakeBlockList = new Array<SnakeBlock>(g.BLOCK_NUMBER_X*g.BLOCK_NUMBER_Y);
  			snakeBlockList.add(snakeHead);
  		}
  		
@@ -229,6 +285,7 @@ public class GameScreen implements Screen {
  		
  		public Boolean checkValidMove(int newX, int newY)
  		{
+ 			System.out.println(snakeHead.previousMove);
  			Move currentMove = getMoveType(currentX,currentY,newX,newY);
  			if(snakeHead.previousMove == Move.LEFT && currentMove==Move.RIGHT)
  				return false;
@@ -237,6 +294,8 @@ public class GameScreen implements Screen {
  			if(snakeHead.previousMove == Move.DOWN && currentMove==Move.UP)
  				return false;
  			if(snakeHead.previousMove == Move.UP && currentMove==Move.DOWN)
+ 				return false;
+ 			if (newX >= grid.BLOCK_NUMBER_X || newX < 0 || newY >= grid.BLOCK_NUMBER_Y || newY < 0)
  				return false;
  			return true;
  		}
@@ -251,6 +310,30 @@ public class GameScreen implements Screen {
  				currentX = newX; currentY = newY;
  				currentLife = maxLife;
  			}
+ 		}
+ 		
+ 		public void checkCompensationMove(int touchX, int touchY)
+ 		{
+ 			currentX = snakeHead.indexX; currentY = snakeHead.indexY;
+ 			/*System.out.println("touch: " + touchX + " " + touchY);
+ 			System.out.println("current: " + currentX + " " + currentY);
+ 			System.out.println("snakehead: " + snakeHead.indexX+" "+snakeHead.indexY);
+ 			if((touchX != currentX || touchY != currentY) && isAlive)
+ 			{
+ 				Move currentMove = Move.NONE;
+ 				if (touchX > currentX && checkValidMove(currentX+1,currentY))
+ 					currentMove = getMoveType(currentX,currentY,currentX+1,currentY);
+ 				if (touchX < currentX && checkValidMove(currentX-1,currentY))
+ 					currentMove = getMoveType(currentX,currentY,currentX-1,currentY);
+ 				if (touchY > currentY && checkValidMove(currentX,currentY+1))
+ 					currentMove = getMoveType(currentX,currentY,currentX,currentY+1);
+ 				if (touchY < currentY && checkValidMove(currentX,currentY-1))
+ 					currentMove = getMoveType(currentX,currentY,currentX,currentY-1);
+ 				moveBlocks(currentMove);
+ 				//System.out.println(currentMove);
+ 				
+ 				currentLife = maxLife;
+ 			}*/
  		}
  		
  		public void checkKill()
@@ -268,6 +351,7 @@ public class GameScreen implements Screen {
  			if (kill)
  			{
  				grid.stopGame("hit");
+ 				grid.hitSound.play();
  			}
  		}
  		
@@ -283,7 +367,8 @@ public class GameScreen implements Screen {
 
  		public float getAlpha(float life)
  		{
- 			return ((255/maxLife)*life);
+ 			//return ((255/maxLife)*life);
+ 			return (life/maxLife)*255;
  		}
  		
  		
@@ -298,7 +383,8 @@ public class GameScreen implements Screen {
  					currentLife = 0;
  					grid.stopGame("timer");
  				}
- 				checkMove(grid.getIndex_X(),grid.getIndex_Y());
+ 				//checkMove(grid.getIndex_X(),grid.getIndex_Y());
+ 				//checkCompensationMove(grid.getIndex_X(),grid.getIndex_Y());
  				checkKill();
  			}
  		}
@@ -318,28 +404,36 @@ public class GameScreen implements Screen {
  		
  		public void elongate()
  		{ 			
- 			SnakeBlock lastBlock = snakeBlockList.get(snakeBlockList.size()-1);
+ 			SnakeBlock lastBlock = snakeBlockList.get(snakeBlockList.size-1);
  			SnakeBlock newBlock = new SnakeBlock(lastBlock);
  			newBlock.moveSnakeBlock(newBlock.oppositeMove(lastBlock.previousMove));
- 			newBlock.moveList.add(0,lastBlock.previousMove);
+ 			newBlock.moveList.insert(0,lastBlock.previousMove);
  			snakeBlockList.add(newBlock);
  			lastBlock.changeTailStatus(false);
  			newBlock.changeTailStatus(true);
  			snakeTail = newBlock;
+ 			snakeTail.rotateSnakeBlock(lastBlock.previousMove);
  		}
  		
  		public void reduceTail()
  		{
- 			System.out.println("EAT TAIL");
- 			snakeBlockList.remove(snakeBlockList.size()-1);
- 			snakeTail = snakeBlockList.get(snakeBlockList.size()-1);
+ 			SnakeBlock lastBlock = snakeBlockList.removeIndex(snakeBlockList.size-1);
+ 			snakeTail = snakeBlockList.get(snakeBlockList.size-1);
  			snakeTail.changeTailStatus(true);
+ 			snakeTail.rotateSnakeBlock(snakeTail.moveList.get(0));
  		}
  		
  		public void resetSnake()
  		{
  			this.currentX = 0;
  			this.currentY = 0;
+ 			
+ 			// dispose all snakeblocks
+ 			for (SnakeBlock currentBlock : snakeBlockList)
+ 			{
+ 				currentBlock.remove();
+ 			}
+ 			
  			snakeBlockList.clear();
  			snakeHead = new SnakeBlock(0,0,BLOCK_WIDTH,BLOCK_HEIGHT);
  			snakeHead.changeHeadStatus(true);
@@ -354,20 +448,19 @@ public class GameScreen implements Screen {
  			snakeTail = s2;
  			snakeTail.changeTailStatus(true);
  			
- 			currentLife = 3f;
- 			System.out.println("jhk"+snakeHead.indexX);
+ 			currentLife = maxLife;
  		}
  		
  		public int getLength()
  		{
- 			return this.snakeBlockList.size();
+ 			return this.snakeBlockList.size;
  		}
  		
  	}
  	
  	public class Food extends Actor
  	{
- 		Texture texture = new Texture(Gdx.files.internal("data/bonus.png"));
+ 		Texture texture = new Texture(Gdx.files.internal("data/FoodTexture.png"));
          int indexX;
          int indexY;
          float blockWidth;
@@ -380,6 +473,7 @@ public class GameScreen implements Screen {
              this.blockWidth = w;
              this.blockHeight = h;
              setBounds(x*w, y*h, w, h);
+             texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
          }
 
          @Override
@@ -387,13 +481,14 @@ public class GameScreen implements Screen {
              batch.draw(texture,indexX*getWidth(),indexY*getHeight(),getWidth(), getHeight());
              //System.out.println(indexX*getX()+" "+indexY*getY());
          }
+
          
  	}
  	
  	public class FoodSpawner extends Actor
  	{
- 		ArrayList<Food> foodList;
- 		ArrayList<SnakeBlock> snakeBlockList;
+ 		Array<Food> foodList;
+ 		Array<SnakeBlock> snakeBlockList;
  		Grid grid;
  		Snake snake;
  		
@@ -401,7 +496,7 @@ public class GameScreen implements Screen {
  		{
  			this.grid = g;
  			this.snake = s;
- 			foodList = new ArrayList<Food>();
+ 			foodList = new Array<Food>();
  		}
  		
  		public void spawnFood()
@@ -434,7 +529,7 @@ public class GameScreen implements Screen {
  			foodList.clear();
  		}
  		
- 		public ArrayList<Food> getFoods()
+ 		public Array<Food> getFoods()
  		{
  			return this.foodList;
  		}
@@ -450,56 +545,7 @@ public class GameScreen implements Screen {
  		
  	}
  	
- 	public class GridBox extends Actor
- 	{
- 		float x = 0;
- 		float y = 0;
- 		int index_x;
- 		int index_y;
- 		float width = 20;
- 		float height = 20;
- 		TextureRegion region;
- 		Texture texture = new Texture(Gdx.files.internal("data/stoneWall.png"));
- 		
- 		public GridBox(int indexX, int indexY)
- 		{
- 			index_x = indexX;
- 			index_y = indexY;
- 			this.x = indexX*width;
- 			this.y = indexY*height;
- 			setBounds(this.x,this.y,this.width,this.height);
- 			//region = new TextureRegion(this.width,this.height);
- 		}
- 		
- 		public GridBox(int indexX, int indexY, float w, float h)
- 		{
- 			index_x = indexX;
- 			index_y = indexY;
- 			this.width = w;
- 			this.height = h;
- 			this.x = indexX*w;
- 			this.y = indexY*h;
- 			setBounds(this.x,this.y,this.width,this.height);
- 			//region = new TextureRegion(this.width,this.height);
- 		}
- 		
- 		
- 		@Override
-         public void draw(SpriteBatch batch, float alpha){
- 			super.draw(batch, alpha);
- 			batch.draw(texture, this.x,this.y,this.width,this.height);
-         }
- 		
- 		public int getIndex_x()
- 		{
- 			return this.index_x;
- 		}
- 		
- 		public int getIndex_y()
- 		{
- 			return this.index_y;
- 		}
- 	}
+
  	
  	public class Grid extends Actor
  	{
@@ -511,13 +557,16 @@ public class GameScreen implements Screen {
  		int BLOCK_NUMBER_Y;
  		boolean isPlaying = false;
  		boolean showingOtherScreen = false;
- 		Texture texture = new Texture(Gdx.files.internal("data/stoneWall.png"));
+ 		Texture texture = new Texture(Gdx.files.internal("data/GridTexture.png"));
  		Sound eatSound = Gdx.audio.newSound(Gdx.files.internal("sounds/bite.mp3"));
+ 		Sound eatTailSound = Gdx.audio.newSound(Gdx.files.internal("sounds/EatTail.wav"));
+ 		Sound hitSound = Gdx.audio.newSound(Gdx.files.internal("sounds/hit.wav"));
  		
  		Snake snake;
  		FoodSpawner foodSpawner;
  		GameUI gameUI;
  		Stage stage;
+ 		GridSnakeGame game;
  		
  		int points = 0;
  		
@@ -534,9 +583,7 @@ public class GameScreen implements Screen {
  	            public boolean touchDown (InputEvent event, float x, float y, int pointer, int button) 
  	            {
  	            	Grid target = (Grid)event.getTarget();
- 	            	GridBox currentBox = target.getCurrentBox(x, y);
- 	            	current_index_x = currentBox.index_x;
- 	            	current_index_y = currentBox.index_y;
+ 	            	target.changeCurrentBox(x, y);
 
  	            	if (!target.showingOtherScreen)
  	            		target.tryToStartGame();
@@ -549,7 +596,7 @@ public class GameScreen implements Screen {
  	            	Grid target = (Grid)event.getTarget();
  	            	if (target.isPlaying)
  	            	{
- 	            		GridBox currentBox = target.getCurrentBox(x, y);
+ 	            		target.changeCurrentBox(x, y);
  	            	}
  	            	//System.out.println(currentBox.getIndex_x() + " " + currentBox.getIndex_y());
  	            }
@@ -558,15 +605,13 @@ public class GameScreen implements Screen {
  	            {
  	            	Grid target = (Grid)event.getTarget();
  	            	target.stopGame("letitgo");
- 	            }
- 	            
+ 	            }	            
  	        });
  		}
  		
  		
  		@Override
          public void draw(SpriteBatch batch, float alpha){
- 			super.draw(batch, alpha);
  			batch.setColor(1,1,1,1);
  			for(int x=0; x< BLOCK_NUMBER_X; x++)
  	        {
@@ -575,16 +620,13 @@ public class GameScreen implements Screen {
  	        }
          }
  		
- 		// this method changes the current_index_x/y already, no need to return anything actually
- 		public GridBox getCurrentBox(float coordX, float coordY)
+ 		public void changeCurrentBox(float coordX, float coordY)
  		{
  			int index_x = (int)(coordX / BLOCK_WIDTH);
  			int index_y = (int)(coordY / BLOCK_HEIGHT);
  			
  			current_index_x = index_x;
  			current_index_y = index_y;
- 			
- 			return new GridBox(index_x,index_y);
  		}
  		
  		public int getIndex_X()
@@ -604,8 +646,13 @@ public class GameScreen implements Screen {
  			if(this.isPlaying)
  			{
  				snake.checkMove(getIndex_X(),getIndex_Y());
+ 				snake.checkCompensationMove(getIndex_X(), getIndex_Y());
  				checkEatTail();
  				checkEat();
+ 				
+ 				if(snake.getLength() >= BLOCK_NUMBER_X*BLOCK_NUMBER_Y)
+ 					this.stopGame("full");
+ 				
  			}
  			
  			if(!snake.isAlive)
@@ -674,7 +721,8 @@ public class GameScreen implements Screen {
  			if (eat)
  			{
  				snake.elongate();
- 				foodSpawner.spawnFood();
+ 				if(snake.getLength() < BLOCK_NUMBER_X*BLOCK_NUMBER_Y)
+ 					foodSpawner.spawnFood();
  				points+=this.snake.getLength();
  				gameUI.updateScore(points);
  				eatSound.play();
@@ -685,13 +733,11 @@ public class GameScreen implements Screen {
  		{
  			SnakeBlock snakeHead = snake.snakeHead;
  			SnakeBlock snakeTail = snake.snakeTail;
- 			
- 			System.out.println(snakeHead.indexX + " HEAD " + snakeHead.indexY);
- 			System.out.println(snakeTail.indexX + " TAIL " + snakeTail.indexY);
- 			
+ 			 			
  			if(snakeHead.indexX == snakeTail.indexX && snakeHead.indexY == snakeTail.indexY)
  			{
  				snake.reduceTail();
+ 				eatTailSound.play();
  			}
  		}
  		
@@ -709,6 +755,15 @@ public class GameScreen implements Screen {
 	         scoreDialog.addAction(move);
 	         
 	         stage.addActor(scoreDialog);
+ 		}
+ 		
+ 		public void exitGame()
+ 		{
+ 			this.snake.clear();
+ 			this.foodSpawner.clear();
+ 			this.clear();
+ 			this.game.mainMenu();
+ 			
  		}
  		
  		public void setSnake(Snake s)
@@ -731,6 +786,10 @@ public class GameScreen implements Screen {
  			this.stage = s;
  		}
  		
+ 		public void setGame(GridSnakeGame g)
+ 		{
+ 			this.game = g;
+ 		}
  		
  	}
  	
@@ -740,14 +799,15 @@ public class GameScreen implements Screen {
      float STAGE_HEIGHT;
      float BLOCK_WIDTH;
      float BLOCK_HEIGHT;
-     int BLOCK_NUMBER_X = 5;
-     int BLOCK_NUMBER_Y = 5;
+     int BLOCK_NUMBER_X = 7;
+     int BLOCK_NUMBER_Y = 7;
      Grid grid;
      GameUI gameUI;
      
      public void create() {   
     	 
-    	 Gdx.graphics.setVSync(false);    
+    	 Gdx.graphics.setVSync(false);   
+    	 Gdx.input.setCatchBackKey(true);
     	 
      	STAGE_WIDTH = Gdx.graphics.getWidth();
          STAGE_HEIGHT = Gdx.graphics.getHeight();
@@ -761,9 +821,7 @@ public class GameScreen implements Screen {
          BLOCK_HEIGHT = STAGE_HEIGHT / BLOCK_NUMBER_Y;
      	
          Texture.setEnforcePotImages(false);
-         
-         System.out.println(BLOCK_WIDTH);
-         
+                  
          stage = new Stage(Gdx.graphics.getWidth(),Gdx.graphics.getHeight(),true);
          stage.setViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), false);
          stage.getCamera().position.set(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2, 0);
@@ -784,10 +842,13 @@ public class GameScreen implements Screen {
          grid.setFoodSpawner(foodSpawner);
          grid.setGameUI(gameUI);
          grid.setStage(stage);
+         grid.setGame(game);
          
          stage.addActor(snake);
          stage.addActor(foodSpawner);
          stage.addActor(gameUI);
+         
+         System.out.println("width " + BLOCK_WIDTH);
          
          //WindowStyle newStyle = new WindowStyle();
          //newStyle.titleFont = new BitmapFont();      
@@ -807,9 +868,7 @@ public class GameScreen implements Screen {
          stage.act(Gdx.graphics.getDeltaTime());
          
          gameUI.debug(); // turn on all debug lines (table, cell, and widget)
-         stage.draw();
          //Table.drawDebug(stage);
-         
          stage.draw();
      }
 

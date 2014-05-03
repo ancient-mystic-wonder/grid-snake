@@ -1,0 +1,36 @@
+package com.me.GridSnake;
+
+import com.badlogic.gdx.Game;
+
+public class GridSnakeGame extends Game {
+
+	MainMenuScreen mainMenuScreen;
+	GameScreen gameScreen;
+	InstructionsScreen instructionsScreen;
+	
+	@Override
+	public void create() {
+		// TODO Auto-generated method stub
+		
+		 mainMenuScreen = new MainMenuScreen(this);
+		 gameScreen = new GameScreen(this);
+		 instructionsScreen = new InstructionsScreeen(this);
+         setScreen(mainMenuScreen);  
+	}
+	
+	public void startGame()
+	{
+		setScreen(gameScreen);  
+	}
+	
+	public void setInstructions()
+	{
+		setScreen(instructionsScreen);
+	}
+	
+	public void mainMenu()
+	{
+		setScreen(mainMenuScreen);
+	}
+
+}

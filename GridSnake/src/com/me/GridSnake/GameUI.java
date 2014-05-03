@@ -24,6 +24,8 @@ public class GameUI extends Table {
 	Label tapScreenLabel;
 	Label scoreLabel;
 	
+	Color gray = new Color(74/255f, 78/255f, 79/255f, 1);
+	
 	public GameUI(Grid grid)
 	{
 		this.grid = grid;
@@ -47,13 +49,13 @@ public class GameUI extends Table {
         button1.setHeight(BUTTON_HEIGHT);
         
 		
-		LabelStyle labelStyle = new LabelStyle(buttonFont, Color.WHITE);
+		LabelStyle labelStyle = new LabelStyle(buttonFont, gray);
 		
 		int s = grid.points;
         
 		tapScreenLabel = new Label( "DRAG THE SNAKE HEAD...",labelStyle );
         //tapScreenLabel.setFontScale(0.5f);
-		scoreLabel = new Label("000",labelStyle);
+		scoreLabel = new Label("SCORE: 0",labelStyle);
         //Label subtitle = new Label("Ancient Mystic Wonder Games", labelStyle);
 
 		float origX = 320;
@@ -80,12 +82,13 @@ public class GameUI extends Table {
 	public void stop()
 	{
 		tapScreenLabel.setText("DRAG THE SNAKE HEAD...");
+		scoreLabel.setText("SCORE: 0");
 	}
 	
 	public void updateScore(int score)
 	{
 		String newScore = Integer.toString(score);
-		scoreLabel.setText(newScore);
+		scoreLabel.setText("SCORE: " + newScore);
 	}
 	
 	/*

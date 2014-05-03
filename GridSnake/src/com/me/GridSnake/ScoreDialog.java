@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -35,7 +36,6 @@ public class ScoreDialog extends Dialog {
 		this.grid = grid;
 		
 		determineText(score, deathType);
-		
 	}
 	
 	public ScoreDialog(String title, WindowStyle style, Grid grid)
@@ -55,17 +55,23 @@ public class ScoreDialog extends Dialog {
 			this.text("You let go of the snake!");
 		else if(deathType.equals("timer"))
 			this.text("You didn't move!");
+		else if(deathType.equals("full"))
+			this.text("The board is full!");
 		else
 			this.text("You died!");
 		
 		this.getContentTable().row();
 		
 		this.text("Your score: " + Integer.toString(score));
-		this.button("Play again!");
+		this.button("Play again!","play");
+		this.button("Quit","quit");
 	}
 	
 	protected void result(Object object)
 	{
-		this.grid.resetBoard();
+		if(object.equals("play"))
+			this.grid.resetBoard();
+		else
+			this.grid.exitGame();
 	}
 }

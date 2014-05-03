@@ -6,6 +6,7 @@ public class GridSnakeGame extends Game {
 
 	MainMenuScreen mainMenuScreen;
 	GameScreen gameScreen;
+	InstructionsScreen instructionsScreen;
 	
 	@Override
 	public void create() {
@@ -13,12 +14,23 @@ public class GridSnakeGame extends Game {
 		
 		 mainMenuScreen = new MainMenuScreen(this);
 		 gameScreen = new GameScreen(this);
+		 instructionsScreen = new InstructionsScreen(this);
          setScreen(mainMenuScreen);  
 	}
 	
 	public void startGame()
 	{
 		setScreen(gameScreen);  
+	}
+	
+	public void showInstructions()
+	{
+		setScreen(instructionsScreen);
+	}
+	
+	public void mainMenu()
+	{
+		setScreen(mainMenuScreen);
 	}
 
 }
