@@ -1,0 +1,83 @@
+package com.mygdx.GridSnake;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.mygdx.GridSnake.GameScreen.Grid;
+
+public class ScoreDialog extends Table {
+
+	private Grid grid;
+	private Dialog scoreDialog;
+	String defeatText;
+	Color gray = new Color(74/255f, 78/255f, 79/255f, 1);
+	
+	public ScoreDialog(Grid grid, String deathType)
+	{
+		this.grid = grid;
+		determineText(deathType);
+		WindowStyle dialogStyle = new WindowStyle();
+		dialogStyle.titleFont = new BitmapFont(Gdx.files.internal("fonts/munro.fnt"),
+        		Gdx.files.internal("fonts/munro.png"),false);
+		Texture dialogTexture =  new Texture(Gdx.files.internal("scoreDialogSkin/ScoreDialog.png"));
+		TextureRegion tr = new TextureRegion(dialogTexture);
+		dialogStyle.titleFont = new BitmapFont();
+
+		scoreDialog = new Dialog("Score", dialogStyle);
+		scoreDialog.background(new TextureRegionDrawable(tr));
+		
+		Texture upTexture =  new Texture(Gdx.files.internal("textures/playButtonTexture.png"));
+        Texture downTexture =  new Texture(Gdx.files.internal("textures/playButtonTexture_down.png"));
+        upTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+        downTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+        TextureRegion upRegion = new TextureRegion(upTexture);
+        TextureRegion downRegion = new TextureRegion(downTexture);
+        BitmapFont buttonFont = new BitmapFont(Gdx.files.internal("fonts/digiffiti.fnt"),
+        		Gdx.files.internal("fonts/digiffiti.png"),false);
+        
+		TextButtonStyle style = new TextButtonStyle();
+        style.up = new TextureRegionDrawable(upRegion);
+        style.down = new TextureRegionDrawable(downRegion);
+        style.font = buttonFont;
+        style.fontColor = gray;
+		
+        TextButton playButton = new TextButton("PLAY",style);
+        TextButton quitButton = new TextButton("QUIT",style);
+		
+		add(scoreDialog);
+		row();
+		add(playButton).pad(5);
+        row();
+        add(quitButton).pad(5);
+		
+		
+	}
+	
+	private void determineText(String deathType)
+	{
+		if(deathType.equals("hit"))
+			defeatText="You hit yourself!";
+		else if(deathType.equals("letitgo"))
+			defeatText="You let go of the snake!";
+		else if(deathType.equals("timer"))
+			defeatText="You didn't move!";
+		else if(deathType.equals("full"))
+			defeatText="The board is full!";
+		else
+			defeatText="You died!";
+
+	}
+	
+}
