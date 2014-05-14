@@ -1,8 +1,6 @@
 package com.mygdx.GridSnake;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Preferences;
-import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
@@ -81,27 +79,12 @@ public class ScoreDialog extends Table {
 		scoreDialog.row();
 		
 		
-		
-		
-		
-		// calculate and recordscores
-		int score = grid.points*minutesMultiplier*lengthMultiplier;
-		String scoreString = Integer.toString(score);
-		
-		Preferences prefs = Gdx.app.getPreferences("My Preferences");
-		int currentHighScore = prefs.getInteger("highscore", 0);
-		
-		if(score>currentHighScore)
-		{
-			prefs.putInteger("highscore", score);
-			currentHighScore = score;
-		}
-		
-		prefs.flush();
-		
+		// scores
+		String scoreString = Integer.toString(grid.points*minutesMultiplier*lengthMultiplier);
 		scoreDialog.add(new Label("Your Score: " + scoreString,labelStyle)).expand();
 		scoreDialog.row();
-		scoreDialog.add(new Label("High Score: " + Integer.toString(currentHighScore),labelStyle)).expand();
+		scoreDialog.add(new Label("High Score: " + "xxx",labelStyle)).expand();
+		
 		
 		
 		// SET BUTTONS

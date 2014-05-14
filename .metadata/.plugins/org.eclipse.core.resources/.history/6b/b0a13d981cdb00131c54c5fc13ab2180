@@ -7,12 +7,12 @@ import com.mygdx.GridSnake.GridSnakeGame;
 public class DesktopLauncher {
 	public static void main (String[] arg) {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
-		//config.width = 240;
-		//config.height = 320;
+		config.width = 240;
+		config.height = 320;
 		//config.width = 320;
 		//config.height = 480;
-		config.width = 480;
-		config.height = 640;
+		//config.width = 480;
+		//config.height = 640;
 		
 		//config.width = 480;
 		//config.height = 800;

@@ -97,8 +97,6 @@ public class ScoreDialog extends Table {
 			currentHighScore = score;
 		}
 		
-		prefs.flush();
-		
 		scoreDialog.add(new Label("Your Score: " + scoreString,labelStyle)).expand();
 		scoreDialog.row();
 		scoreDialog.add(new Label("High Score: " + Integer.toString(currentHighScore),labelStyle)).expand();

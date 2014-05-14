@@ -11,4 +11,6 @@
 <fullyQualifiedTypeName name="com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle"/>
 <fullyQualifiedTypeName name="com.badlogic.gdx.scenes.scene2d.ui.Label"/>
 <fullyQualifiedTypeName name="com.badlogic.gdx.scenes.scene2d.ui.Window"/>
+<fullyQualifiedTypeName name="com.badlogic.gdx.files.FileHandle"/>
+<fullyQualifiedTypeName name="com.badlogic.gdx.Preferences"/>
 </qualifiedTypeNameHistroy>

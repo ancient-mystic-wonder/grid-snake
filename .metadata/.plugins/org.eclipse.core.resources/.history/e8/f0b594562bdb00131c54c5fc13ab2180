@@ -1,6 +1,7 @@
 package com.mygdx.GridSnake;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Texture.TextureFilter;
@@ -10,10 +11,13 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle;
+import com.badlogic.gdx.scenes.scene2d.ui.Window;
 import com.badlogic.gdx.scenes.scene2d.ui.Window.WindowStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -22,26 +26,84 @@ import com.mygdx.GridSnake.GameScreen.Grid;
 public class ScoreDialog extends Table {
 
 	Grid grid;
-	private Dialog scoreDialog;
+	private Window scoreDialog;
 	String defeatText;
 	Color gray = new Color(74/255f, 78/255f, 79/255f, 1);
+	Color green = new Color(182/255f, 222/255f, 159/255f, 1);
 	
-	public ScoreDialog(Grid grid, String deathType)
+	public ScoreDialog(Grid g, String deathType)
 	{
-		this.grid = grid;
+		this.grid = g;
 		determineText(deathType);
+		
+		
+		// SET DIALOG
 		WindowStyle dialogStyle = new WindowStyle();
 		dialogStyle.titleFont = new BitmapFont(Gdx.files.internal("fonts/munro.fnt"),
         		Gdx.files.internal("fonts/munro.png"),false);
 		Texture dialogTexture =  new Texture(Gdx.files.internal("scoreDialogSkin/ScoreDialog.png"));
+		dialogTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
 		TextureRegion tr = new TextureRegion(dialogTexture);
 		dialogStyle.titleFont = new BitmapFont();
 
-		scoreDialog = new Dialog("Score", dialogStyle);
+		scoreDialog = new Window("", dialogStyle);
 		scoreDialog.background(new TextureRegionDrawable(tr));
 		
-		Texture upTexture =  new Texture(Gdx.files.internal("textures/playButtonTexture.png"));
-        Texture downTexture =  new Texture(Gdx.files.internal("textures/playButtonTexture_down.png"));
+		
+		// DIALOG TEXT
+		BitmapFont munroFont = new BitmapFont(Gdx.files.internal("fonts/munro.fnt"),
+        		Gdx.files.internal("fonts/munro.png"),false);
+        
+		LabelStyle labelStyle = new LabelStyle(munroFont, green);
+		labelStyle.font.setScale(0.3f);
+		scoreDialog.add(new Label(defeatText,labelStyle)).expand();
+		scoreDialog.row();
+		
+		
+		// time bonus
+		float timer = grid.timer;
+		int minutes = (int)timer/60;
+		int seconds = (int)timer%60;
+		
+		int minutesMultiplier = ((int)timer/30)+1;
+		
+		String secondsString = String.format("%02d", seconds);
+		
+		String timeText = Integer.toString(minutes)+":"+secondsString;
+		scoreDialog.add(new Label("Time Bonus: " + timeText + " - " + minutesMultiplier + "x",labelStyle)).expand();
+		scoreDialog.row();
+		
+		
+		// length bonus
+		int lengthMultiplier = ((grid.bestLength-3)/5+1);
+		scoreDialog.add(new Label("Length Bonus: " + grid.bestLength + " - " + lengthMultiplier + "x",labelStyle)).expand();
+		scoreDialog.row();
+		
+		
+		// scores
+		int score = grid.points*minutesMultiplier*lengthMultiplier;
+		String scoreString = Integer.toString(score);
+		scoreDialog.add(new Label("Your Score: " + scoreString,labelStyle)).expand();
+		scoreDialog.row();
+		scoreDialog.add(new Label("High Score: " + "xxx",labelStyle)).expand();
+		
+		
+		
+		FileHandle scoreFile = Gdx.files.local("hiscore.txt");
+		
+		if(scoreFile.exists())
+		{
+			String text = scoreFile.readString();
+			int currentHighScore = Integer.parseInt(text);
+			
+			if(currentHighScore < score)
+				scoreFile.writeString(Integer.toString(score), false);
+		}
+		
+		
+		// SET BUTTONS
+		Texture upTexture =  new Texture(Gdx.files.internal("textures/smallButtonTexture.png"));
+        Texture downTexture =  new Texture(Gdx.files.internal("textures/smallButtonTexture_down.png"));
         upTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
         downTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
         TextureRegion upRegion = new TextureRegion(upTexture);
@@ -63,7 +125,9 @@ public class ScoreDialog extends Table {
         {
         	public void clicked(InputEvent event,float x,float y)
         	{
-        		grid.tryToStartGame();
+        		ScoreDialog target = (ScoreDialog)event.getTarget().getParent().getParent();
+        		target.setVisible(false);
+        		grid.resetBoard();
         	}
         });
         
@@ -71,16 +135,14 @@ public class ScoreDialog extends Table {
         {
         	public void clicked(InputEvent event,float x,float y)
         	{
-        		game.showInstructions();
+        		grid.exitGame();
         	}
         });
         
-		add(scoreDialog);
+		add(scoreDialog).width(300).height(205).colspan(2);
 		row();
 		add(playButton).pad(5);
-        row();
         add(quitButton).pad(5);
-		
 		
 	}
 	

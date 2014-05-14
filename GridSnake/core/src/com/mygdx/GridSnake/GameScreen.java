@@ -751,7 +751,7 @@ public class GameScreen implements Screen {
  				snake.elongate();
  				if(snake.getLength() < BLOCK_NUMBER_X*BLOCK_NUMBER_Y)
  					foodSpawner.spawnFood();
- 				points+=this.snake.getLength();
+ 				points+=1;
  				gameUI.updateScore(points);
  				gameUI.updateMultiplier(snake.getLength());
  				eatSound.play();
