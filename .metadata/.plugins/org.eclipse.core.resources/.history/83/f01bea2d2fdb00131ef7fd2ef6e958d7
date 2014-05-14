@@ -102,6 +102,14 @@ public class GameScreen implements Screen {
          }
          
          {
+        	 
+        	 if(solidify)
+        	 {
+        		 texture = new Texture(Gdx.files.internal("textures/snake/SnakeBodyTexture_solid.png"),true);
+                 headTexture = new Texture(Gdx.files.internal("textures/snake/SnakeHeadTexture_solid.png"));
+                 tailTexture = new Texture(Gdx.files.internal("textures/snake/SnakeTailTexture_solid.png"));
+        	 }
+        	 
         	 texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
         	 headTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
         	 tailTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
@@ -239,8 +247,8 @@ public class GameScreen implements Screen {
  		int currentX, currentY;
  		Move previousMove = Move.NONE;
  		
- 		float maxLife = 1.5f;
- 		float currentLife = 1.5f;
+ 		float maxLife = 1.0f;
+ 		float currentLife = 1.0f;
  		//float maxLife = 15f;
  		//float currentLife = 15f;
  		
@@ -419,6 +427,10 @@ public class GameScreen implements Screen {
  			newBlock.changeTailStatus(true);
  			snakeTail = newBlock;
  			snakeTail.rotateSnakeBlock(lastBlock.previousMove);
+ 		
+ 				if(this.getLength() > grid.bestLength)
+ 					grid.bestLength = this.getLength();
+ 		
  		}
  		
  		public void reduceTail()
@@ -479,7 +491,12 @@ public class GameScreen implements Screen {
              this.blockWidth = w;
              this.blockHeight = h;
              setBounds(x*w, y*h, w, h);
+             
+             if (solidify)
+            	 texture = new Texture(Gdx.files.internal("textures/FoodTexture_solid.png"));
+             
              texture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+         
          }
 
          @Override
@@ -575,6 +592,8 @@ public class GameScreen implements Screen {
  		GridSnakeGame game;
  		
  		int points = 0;
+ 		float timer = 0;
+ 		int bestLength = 3;
  		
  		public Grid(int x, int y, float w, float h)
  		{
@@ -659,6 +678,8 @@ public class GameScreen implements Screen {
  				if(snake.getLength() >= BLOCK_NUMBER_X*BLOCK_NUMBER_Y)
  					this.stopGame("full");
  				
+ 				timer+=delta;
+ 				gameUI.updateTimer(timer);
  			}
  			
  			if(!snake.isAlive)
@@ -695,6 +716,7 @@ public class GameScreen implements Screen {
 			snake.resetSnake();
 			gameUI.stop();
 			points = 0;
+			timer = 0;
 			foodSpawner.empty();
 			foodSpawner.spawnFood();
  		}
@@ -729,7 +751,7 @@ public class GameScreen implements Screen {
  				snake.elongate();
  				if(snake.getLength() < BLOCK_NUMBER_X*BLOCK_NUMBER_Y)
  					foodSpawner.spawnFood();
- 				points+=this.snake.getLength();
+ 				points+=1;
  				gameUI.updateScore(points);
  				gameUI.updateMultiplier(snake.getLength());
  				eatSound.play();
@@ -752,13 +774,14 @@ public class GameScreen implements Screen {
  		public void showScore(String defeatString)
  		{
  			 this.showingOtherScreen = true;
-	         Skin uiSkin = new Skin(Gdx.files.internal("uiskin/uiskin.json"));
+	         //Skin uiSkin = new Skin(Gdx.files.internal("uiskin/uiskin.json"));
+ 			 
 		         
-	         ScoreDialog scoreDialog = new ScoreDialog("Score", uiSkin, grid, grid.points, defeatString);
-	         scoreDialog.pack();
+	         ScoreDialog scoreDialog = new ScoreDialog(grid, defeatString);
+	         //scoreDialog.pack();
 	         scoreDialog.setPosition((this.width/2)-(scoreDialog.getWidth()/2), 0);
 	         MoveToAction move = new MoveToAction();
-	         move.setPosition((this.width/2)-(scoreDialog.getWidth()/2), this.height/2);
+	         move.setPosition((this.width/2)-(scoreDialog.getWidth()/2), (this.height/2)+(60));
 	         move.setDuration(0.25f);
 	         scoreDialog.addAction(move);
 	         
@@ -805,14 +828,20 @@ public class GameScreen implements Screen {
  	private Stage stage;
      int STAGE_WIDTH;
      int STAGE_HEIGHT;
+     
+     int GRID_WIDTH;
+     int GRID_HEIGHT;
+     
      int CURRENT_WIDTH;
      int CURRENT_HEIGHT;
      float BLOCK_WIDTH;
      float BLOCK_HEIGHT;
      int BLOCK_NUMBER_X = 7;
-     int BLOCK_NUMBER_Y = 7;
+     int BLOCK_NUMBER_Y = 8;
      Grid grid;
      GameUI gameUI;
+     
+     boolean solidify = false;
      
      public int getGCD(int a, int b) { return b==0 ? a : getGCD(b, a%b); }
      
@@ -827,36 +856,68 @@ public class GameScreen implements Screen {
          CURRENT_WIDTH = Gdx.graphics.getWidth();
          CURRENT_HEIGHT = Gdx.graphics.getHeight();
          
-         if (STAGE_WIDTH < STAGE_HEIGHT)
-         	STAGE_HEIGHT = STAGE_WIDTH;
-         else
-         	STAGE_WIDTH = STAGE_HEIGHT;
+         GRID_WIDTH = STAGE_WIDTH;
+         GRID_HEIGHT = STAGE_HEIGHT;
          
-         BLOCK_WIDTH = STAGE_WIDTH / BLOCK_NUMBER_X;
-         BLOCK_HEIGHT = STAGE_HEIGHT / BLOCK_NUMBER_Y;
+         if (GRID_WIDTH < GRID_HEIGHT)
+        	 GRID_HEIGHT = GRID_WIDTH;
+         else
+        	 GRID_WIDTH = GRID_HEIGHT;
+         
+         BLOCK_WIDTH = (float)GRID_WIDTH / BLOCK_NUMBER_X;
+         BLOCK_HEIGHT = (float)GRID_HEIGHT / BLOCK_NUMBER_Y;
+         
+         if (BLOCK_WIDTH>BLOCK_HEIGHT)
+        	 BLOCK_HEIGHT=BLOCK_WIDTH;
+         else
+        	 BLOCK_WIDTH=BLOCK_HEIGHT;
      	
          int gcd = getGCD(STAGE_WIDTH,STAGE_HEIGHT);         
          int STAGE_ASPECT_WIDTH = STAGE_WIDTH/gcd;
          int STAGE_ASPECT_HEIGHT = STAGE_HEIGHT/gcd;
          
-         gcd = getGCD(STAGE_WIDTH,STAGE_HEIGHT); 
+         gcd = getGCD(CURRENT_WIDTH,CURRENT_HEIGHT); 
          int CURRENT_ASPECT_WIDTH = CURRENT_WIDTH/gcd;
          int CURRENT_ASPECT_HEIGHT = CURRENT_HEIGHT/gcd;
          
+         System.out.println(STAGE_WIDTH+":"+STAGE_HEIGHT);
+         System.out.println(CURRENT_ASPECT_WIDTH+":"+CURRENT_ASPECT_HEIGHT);
+         
+         
+         // check if we gonna solidify the blocks
+         float REAL_BLOCK_WIDTH = (float)CURRENT_WIDTH / BLOCK_NUMBER_X;
+         float REAL_BLOCK_HEIGHT = (float)CURRENT_HEIGHT / BLOCK_NUMBER_Y;
+         
+         if (REAL_BLOCK_WIDTH < REAL_BLOCK_HEIGHT)
+        	 REAL_BLOCK_HEIGHT = REAL_BLOCK_WIDTH;
+         else
+        	 REAL_BLOCK_WIDTH = REAL_BLOCK_HEIGHT;
+         
+         System.out.println("rrr"+REAL_BLOCK_WIDTH);
+         
+         if(REAL_BLOCK_WIDTH<40)
+        	 solidify = true;
+         
+         //System.out.println((float)STAGE_ASPECT_WIDTH/(float)CURRENT_ASPECT_WIDTH + " " +
+        //		 (float)STAGE_ASPECT_HEIGHT/(float)CURRENT_ASPECT_HEIGHT);
+         
          // we have 2:3
-        
          // for 240x320 == 3:4 (2/3 < 3/4)
-         if(STAGE_ASPECT_WIDTH/CURRENT_ASPECT_WIDTH <= STAGE_ASPECT_HEIGHT/CURRENT_ASPECT_HEIGHT)
+         if((float)STAGE_ASPECT_WIDTH/(float)CURRENT_ASPECT_WIDTH <= (float)STAGE_ASPECT_HEIGHT/(float)CURRENT_ASPECT_HEIGHT)
+         {
         	 stage = new Stage(new StretchViewport(320,480));
+         }
          
          // for 480x800 == 3:5 (2/3 > 3/5)
          else
         	 stage = new Stage(new FitViewport(320,480));
          
+
+         
          //stage.getCamera().position.set(Gdx.graphics.getWidth()/2, Gdx.graphics.getHeight()/2, 0);
          Gdx.input.setInputProcessor(stage);
          
-         grid = new Grid(BLOCK_NUMBER_X,BLOCK_NUMBER_Y,STAGE_WIDTH,STAGE_HEIGHT);
+         grid = new Grid(BLOCK_NUMBER_X,BLOCK_NUMBER_Y,GRID_WIDTH,GRID_HEIGHT);
          grid.setTouchable(Touchable.enabled);
          stage.addActor(grid);
          

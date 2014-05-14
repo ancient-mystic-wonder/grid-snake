@@ -717,6 +717,7 @@ public class GameScreen implements Screen {
 			gameUI.stop();
 			points = 0;
 			timer = 0;
+			bestLength = 3;
 			foodSpawner.empty();
 			foodSpawner.spawnFood();
  		}
